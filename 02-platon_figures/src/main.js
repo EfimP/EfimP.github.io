@@ -1,6 +1,6 @@
 import { vec3, mat4 } from "./mth/math.js";
 import { Timer } from "./anim/timer.js";
-import { createCube, createTriangle, bufLoad } from "./anim/prim.js";
+import { createCube, createTriangle, bufLoad, createOctahedron, createIcohedron } from "./anim/prim.js";
 import { camSet } from "./anim/cam.js";
 import { loadShaders } from "./anim/rnd/res/shaders.js";
 
@@ -19,6 +19,8 @@ class _render{
       return;
     }
 
+    gl.enable(gl.DEPTH_TEST);
+
     // Setting camera and matrixes
     this.cam = camSet(this.canvas);
 
@@ -28,13 +30,19 @@ class _render{
 
     // Vertex buffer
     const size = 0.8;
-    if (figure == "cube") {
-      this.prim = createCube(size);
-    }
-    else if (figure == "triangle") {
+    if (figure == "triangle") {
       this.prim = createTriangle(size);
     }
-    bufLoad(gl, prg, this.prim, this.prim.numOfElements);
+    else if (figure == "cube") {
+      this.prim = createCube(size);
+    }
+    else if (figure == "octa") {
+      this.prim = createOctahedron(size);
+    }
+    else if (figure == "ica") {
+      this.prim = createIcohedron(size);
+    }
+    bufLoad(gl, prg, this.prim);
 
     // Frame buffer
     this.frameBuffer = gl.createBuffer();
@@ -57,7 +65,6 @@ class _render{
     gl.clearColor(0.12, 0.85, 0.970, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.clear(gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
     
     this.timer.response("fps");
 
@@ -73,11 +80,27 @@ class _render{
 
       gl.uniform1f(this.timeLoc, t);
     }
-    if (figure == "cube") {
-      gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // Matrix of world
+    const WorldLoc = gl.getUniformLocation(this.shds.prg, "MatrWorld");
+    gl.uniformMatrix4fv(WorldLoc, false, new Float32Array(mat4().rotateY(this.timer.globalTime * 140).mul(mat4().rotateX(0 * this.timer.globalTime * 70)).toArray()));
+
+    if (figure == "triangle") {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.prim.indexBuffer);
+      gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_INT, 0);
     }
-    else if (figure == "triangle") {
-      gl.drawArrays(gl.TRIANGLES, 0, 12);
+    else if (figure == "cube") {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.prim.indexBuffer);
+      gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_INT, 0);
+      //gl.drawArrays(gl.TRIANGLES, 0, 36);
+    }
+    else if (figure == "octa") {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.prim.indexBuffer);
+      gl.drawElements(gl.TRIANGLES, 24, gl.UNSIGNED_INT, 0);
+    }
+    else if (figure == "ica") {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.prim.indexBuffer);
+      gl.drawElements(gl.TRIANGLES, 60, gl.UNSIGNED_INT, 0);
     }
   } // End of 'render' function
 
@@ -103,20 +126,23 @@ class _render{
     const ProjLoc = gl.getUniformLocation(prg, "MatrProj");
     gl.uniformMatrix4fv(ProjLoc, false, new Float32Array(this.cam.matrProj.toArray()));
 
-    // Matrix of projection
+    // Matrix of view projection
     const VPLoc = gl.getUniformLocation(prg, "MatrVP");
     gl.uniformMatrix4fv(VPLoc, false, new Float32Array(this.cam.matrVP.toArray()));
 
-    // Matrix of projection
+    // Matrix of world
     const WorldLoc = gl.getUniformLocation(prg, "MatrWorld");
-    gl.uniformMatrix4fv(WorldLoc, false, new Float32Array(mat4().rotateY(0).toArray()));
+    gl.uniformMatrix4fv(WorldLoc, false, new Float32Array(mat4().rotateY(120 + 0 * this.timer.globalTime * 140).mul(mat4().rotateX( 120 + 0 * this.timer.globalTime * 70)).toArray()));
   }
 }
 
 window.addEventListener("load", () => {
-  //const rnd1 = new _render("glcanvas1", "triangle");
+  const rnd1 = new _render("glcanvas1", "triangle");
   const rnd2 = new _render("glcanvas2", "cube");
-  //rnd1.mainLoop("triangle");
+  const rnd3 = new _render("glcanvas3", "octa");
+  const rnd4 = new _render("glcanvas4", "ica");
+  rnd1.mainLoop("triangle");
   rnd2.mainLoop("cube");
-  //document.getElementById('rnd').render = rnd;
+  rnd3.mainLoop("octa");
+  rnd4.mainLoop("ica");
 });
