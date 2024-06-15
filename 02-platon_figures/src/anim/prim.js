@@ -45,8 +45,8 @@ function createCubeFacets(size) {
                1, 2, 7,
                6, 7, 4,
                7, 4, 1,
-               2, 7, 3,
-               7, 3, 0];
+               2, 5, 3,
+               5, 3, 0];
 
     return new Prim(p, null, ind, null, null); 
 }

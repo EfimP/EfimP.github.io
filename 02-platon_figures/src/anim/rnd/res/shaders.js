@@ -51,7 +51,7 @@ class Shader {
     
         void main( void )
         {
-            OutColor = vec4(DrawPos.xyy, 1.0);
+            OutColor = vec4(DrawPos.xyy + DrawPos.xxy, 1.0);
         }
         `;
         this.vs = loadShader(gl.VERTEX_SHADER, vs_txt),

@@ -83,7 +83,7 @@ class _render{
 
     // Matrix of world
     const WorldLoc = gl.getUniformLocation(this.shds.prg, "MatrWorld");
-    gl.uniformMatrix4fv(WorldLoc, false, new Float32Array(mat4().rotateY(this.timer.globalTime * 140).mul(mat4().rotateX(0 * this.timer.globalTime * 70)).toArray()));
+    gl.uniformMatrix4fv(WorldLoc, false, new Float32Array(mat4().rotateY(this.timer.globalTime * 140).mul(mat4().rotateX(this.timer.globalTime * 70)).toArray()));
 
     if (figure == "triangle") {
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.prim.indexBuffer);
